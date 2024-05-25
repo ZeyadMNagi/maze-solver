@@ -1,8 +1,8 @@
 import sys
 
-from Frontiers import *
-from Maze import * 
-from Heuristics import *
+from modules.Frontiers import *
+from modules.Maze import * 
+from modules.Heuristics import *
 
 # Main function to run the program
 def main():

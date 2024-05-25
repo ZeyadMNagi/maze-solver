@@ -1,5 +1,5 @@
-from Frontiers import *
-import Node
+from modules.Frontiers import *
+import modules.Node as Node
 
 # Maze class to represent and solve the maze
 class Maze:
