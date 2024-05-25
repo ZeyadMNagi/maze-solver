@@ -3,49 +3,87 @@ import sys
 
 # Node class represents a state in the maze
 class Node:
-    def __init__(self, state, parent, action):
+    def __init__(self, state, parent, action, path_cost=0):
         self.state = state
         self.parent = parent
         self.action = action
+        self.path_cost = path_cost
 
 
-# StackFrontier class for implementing a stack-based frontier
-class StackFrontier:
+# Frontier class for implementing various frontier types
+class Frontier:
     def __init__(self):
         self.frontier = []
 
     def add(self, node):
-        self.frontier.append(node)
+        pass
+
+    def remove(self):
+        pass
+
+    def empty(self):
+        return len(self.frontier) == 0
 
     def contain_state(self, state):
         return any(node.state == state for node in self.frontier)
 
-    def empty(self):
-        return len(self.frontier) == False
+
+# StackFrontier class for implementing a stack-based frontier
+class StackFrontier(Frontier):
+    def add(self, node):
+        self.frontier.append(node)
 
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
         else:
-            node = self.frontier[-1]
-            self.frontier = self.frontier[:-1]
-            return node
+            return self.frontier.pop()
 
 
 # QueueFrontier class for implementing a queue-based frontier
-class QueueFrontier(StackFrontier):
+class QueueFrontier(Frontier):
+    def add(self, node):
+        self.frontier.append(node)
+
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
         else:
-            node = self.frontier[0]
-            self.frontier = self.frontier[1:]
-            return node
+            return self.frontier.pop(0)
+
+
+# UCSFrontier class for implementing Uniform Cost Search
+class UCSFrontier(Frontier):
+    def add(self, node):
+        self.frontier.append(node)
+        self.frontier.sort(key=lambda x: x.path_cost)
+
+    def remove(self):
+        if self.empty():
+            raise Exception("empty frontier")
+        else:
+            return self.frontier.pop(0)
+
+
+# AStarFrontier class for implementing A* Search
+class AStarFrontier(Frontier):
+    def __init__(self, heuristic):
+        super().__init__()
+        self.heuristic = heuristic
+
+    def add(self, node):
+        self.frontier.append(node)
+        self.frontier.sort(key=lambda x: x.path_cost + self.heuristic(x.state))
+
+    def remove(self):
+        if self.empty():
+            raise Exception("empty frontier")
+        else:
+            return self.frontier.pop(0)
 
 
 # Maze class to represent and solve the maze
 class Maze:
-
     def __init__(self, filename):
         # Read the maze from the file
         with open(filename) as f:
@@ -123,11 +161,10 @@ class Maze:
         return result
 
     # Solve the maze
-    def solve(self):
+    def solve(self, frontier):
         self.num_explored = 0
 
         start = Node(state=self.start, parent=None, action=None)
-        frontier = StackFrontier()  # Change this to QueueFrontier for BFS
         frontier.add(start)
 
         self.explored = set()
@@ -155,7 +192,12 @@ class Maze:
 
             for action, state in self.neighbors(node.state):
                 if not frontier.contain_state(state) and state not in self.explored:
-                    child = Node(state=state, parent=node, action=action)
+                    child = Node(
+                        state=state,
+                        parent=node,
+                        action=action,
+                        path_cost=node.path_cost + 1,
+                    )
                     frontier.add(child)
 
     # Output an image of the maze
@@ -216,17 +258,62 @@ class Maze:
         img.save(filename)
 
 
-# Check if filename is provided as command-line argument
-if len(sys.argv) != 2:
-    sys.exit("Usage: python maze.py maze.txt")
+# Define heuristic functions for A* Search
+def manhattan_distance(state):
+    goal = m.goal
+    return abs(state[0] - goal[0]) + abs(state[1] - goal[1])
 
-# Create a maze object and solve it
-m = Maze(sys.argv[1])
-print("Maze:")
-m.print_M()
-print("Solving...")
-m.solve()
-print("States Explored:", m.num_explored)
-print("Solution:")
-m.print_M()
-m.output_image("maze.png", show_explored=True)
+
+def euclidean_distance(state):
+    goal = m.goal
+    return ((state[0] - goal[0]) ** 2 + (state[1] - goal[1]) ** 2) ** 0.5
+
+
+# Main function to run the program
+def main():
+    # Check if filename is provided as command-line argument
+    if len(sys.argv) != 2:
+        sys.exit("Usage: python maze.py maze.txt")
+
+    # Create a maze object
+    m = Maze(sys.argv[1])
+
+    # Prompt user to choose a search algorithm
+    print("Choose a search algorithm:")
+    print("1) DFS")
+    print("2) BFS")
+    print("3) UCS")
+    print("4) A*")
+    choice = input("Enter the number of the algorithm: ")
+
+    # Select the frontier based on the user's choice
+    if choice == "1":
+        frontier = StackFrontier()
+    elif choice == "2":
+        frontier = QueueFrontier()
+    elif choice == "3":
+        frontier = UCSFrontier()
+    elif choice == "4":
+        heuristic_choice = input(
+            "Choose heuristic for A* (1: Manhattan Distance, 2: Euclidean Distance): "
+        )
+        if heuristic_choice == "1":
+            frontier = AStarFrontier(manhattan_distance)
+        elif heuristic_choice == "2":
+            frontier = AStarFrontier(euclidean_distance)
+        else:
+            sys.exit("Invalid heuristic choice")
+    else:
+        sys.exit("Invalid choice")
+
+    # Solve the maze using the selected search algorithm
+    print("Solving...")
+    m.solve(frontier)
+    print("States Explored:", m.num_explored)
+    print("Solution:")
+    m.print_M()
+    m.output_image("maze.png", show_explored=True)
+
+
+if __name__ == "__main__":
+    main()
