@@ -67,13 +67,16 @@ class UCSFrontier(Frontier):
 
 # AStarFrontier class for implementing A* Search
 class AStarFrontier(Frontier):
-    def __init__(self, heuristic):
+    def __init__(self, heuristic, goal):
         super().__init__()
         self.heuristic = heuristic
+        self.goal = goal
 
     def add(self, node):
         self.frontier.append(node)
-        self.frontier.sort(key=lambda x: x.path_cost + self.heuristic(x.state))
+        self.frontier.sort(
+            key=lambda x: x.path_cost + self.heuristic(x.state, self.goal)
+        )
 
     def remove(self):
         if self.empty():
@@ -259,13 +262,11 @@ class Maze:
 
 
 # Define heuristic functions for A* Search
-def manhattan_distance(state):
-    goal = m.goal
+def manhattan_distance(state, goal):
     return abs(state[0] - goal[0]) + abs(state[1] - goal[1])
 
 
-def euclidean_distance(state):
-    goal = m.goal
+def euclidean_distance(state, goal):
     return ((state[0] - goal[0]) ** 2 + (state[1] - goal[1]) ** 2) ** 0.5
 
 
@@ -298,9 +299,9 @@ def main():
             "Choose heuristic for A* (1: Manhattan Distance, 2: Euclidean Distance): "
         )
         if heuristic_choice == "1":
-            frontier = AStarFrontier(manhattan_distance)
+            frontier = AStarFrontier(manhattan_distance, m.goal)
         elif heuristic_choice == "2":
-            frontier = AStarFrontier(euclidean_distance)
+            frontier = AStarFrontier(euclidean_distance, m.goal)
         else:
             sys.exit("Invalid heuristic choice")
     else:
