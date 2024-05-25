@@ -1,6 +1,7 @@
 import sys
 
 
+# Node class represents a state in the maze
 class Node:
     def __init__(self, state, parent, action):
         self.state = state
@@ -8,6 +9,7 @@ class Node:
         self.action = action
 
 
+# StackFrontier class for implementing a stack-based frontier
 class StackFrontier:
     def __init__(self):
         self.frontier = []
@@ -30,6 +32,7 @@ class StackFrontier:
             return node
 
 
+# QueueFrontier class for implementing a queue-based frontier
 class QueueFrontier(StackFrontier):
     def remove(self):
         if self.empty():
@@ -40,13 +43,15 @@ class QueueFrontier(StackFrontier):
             return node
 
 
+# Maze class to represent and solve the maze
 class Maze:
 
     def __init__(self, filename):
-
+        # Read the maze from the file
         with open(filename) as f:
             content = f.read()
 
+        # Check if start and end points exist
         if content.count("A") != 1:
             raise Exception("No start point")
         if content.count("B") != 1:
@@ -58,6 +63,7 @@ class Maze:
 
         self.walls = []
 
+        # Parse the maze content
         for i in range(self.height):
             row = []
             for j in range(self.width):
@@ -79,7 +85,8 @@ class Maze:
 
         self.solution = None
 
-    def print(self):
+    # Print the maze
+    def print_M(self):
         solution = self.solution[1] if self.solution is not None else None
         print()
         for i, row in enumerate(self.walls):
@@ -97,6 +104,7 @@ class Maze:
             print()
         print()
 
+    # Generate neighbors of a given state
     def neighbors(self, state):
         row, col = state
 
@@ -114,11 +122,12 @@ class Maze:
                 result.append((action, (r, c)))
         return result
 
+    # Solve the maze
     def solve(self):
         self.num_explored = 0
 
         start = Node(state=self.start, parent=None, action=None)
-        frontier = StackFrontier()
+        frontier = StackFrontier()  # Change this to QueueFrontier for BFS
         frontier.add(start)
 
         self.explored = set()
@@ -149,6 +158,7 @@ class Maze:
                     child = Node(state=state, parent=node, action=action)
                     frontier.add(child)
 
+    # Output an image of the maze
     def output_image(self, filename, show_solution=True, show_explored=False):
         from PIL import Image, ImageDraw
 
@@ -206,15 +216,17 @@ class Maze:
         img.save(filename)
 
 
+# Check if filename is provided as command-line argument
 if len(sys.argv) != 2:
     sys.exit("Usage: python maze.py maze.txt")
 
+# Create a maze object and solve it
 m = Maze(sys.argv[1])
 print("Maze:")
-m.print()
+m.print_M()
 print("Solving...")
 m.solve()
 print("States Explored:", m.num_explored)
 print("Solution:")
-m.print()
+m.print_M()
 m.output_image("maze.png", show_explored=True)
