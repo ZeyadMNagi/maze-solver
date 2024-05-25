@@ -2,6 +2,7 @@ import sys
 
 from Frontiers import *
 from Maze import * 
+from Heuristics import *
 
 # Main function to run the program
 def main():
