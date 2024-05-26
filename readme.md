@@ -18,9 +18,6 @@ This is a Python program to solve mazes using Depth-First Search algorithm.
     4) `A*`
     5) `IDA*`
     6) `Greedy Best First Search`
-    7) `Greedy Best First Search with Heuristic`
-    8) `Greedy Best First Search with Heuristic and Path Cost`
-    9) `Greedy Best First Search with Heuristic and Path Cost and Path Length`
 
 where `maze` is the name of the maze file.
 
