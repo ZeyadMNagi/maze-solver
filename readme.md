@@ -7,8 +7,8 @@ This is a Python program to solve mazes using Depth-First Search algorithm.
 1. Make sure you have Python installed.
 2. Run the program with the following command:
 
-    ```bash
-    python maze.py maze
+    ```bath
+        py ./index.py ./mazes/maze6.txt
     ```
 
 3. Choose one of these methods to solve the maze:
@@ -23,7 +23,7 @@ where `maze` is the name of the maze file.
 
 the maze file should be something like this:
 
-```code
+```text
 ###                 #########
 #   ###################   # #
 # ####                # # # #
